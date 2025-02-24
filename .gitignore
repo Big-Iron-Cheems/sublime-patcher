@@ -1,0 +1,7 @@
+.idea
+.vscode
+*.iws
+cmake-build-*/
+out/
+build/
+.cache
