@@ -3,7 +3,7 @@
 #include <format>
 #include <stdexcept>
 
-enum class Platform { Unknown, Windows, MacOS, Linux };
+enum class Platform { Unknown, Windows, macOS, Linux };
 
 namespace platform {
 constexpr std::string_view to_string(const Platform platform) {
@@ -11,7 +11,7 @@ constexpr std::string_view to_string(const Platform platform) {
         using enum Platform;
         case Unknown: return "Unknown";
         case Windows: return "Windows";
-        case MacOS: return "MacOS";
+        case macOS: return "macOS";
         case Linux: return "Linux";
     }
     throw std::invalid_argument("Invalid platform value");
@@ -20,7 +20,7 @@ constexpr std::string_view to_string(const Platform platform) {
 constexpr Platform from_string(const std::string_view str) {
     using enum Platform;
     if (str == "windows") return Windows;
-    if (str == "macos") return MacOS;
+    if (str == "osx") return macOS;
     if (str == "linux") return Linux;
     return Unknown;
 }
