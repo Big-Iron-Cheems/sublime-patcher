@@ -11,6 +11,17 @@ It works by patching the license check functions in the binary to accept any lic
 4. Run Sublime Text or Sublime Merge and enter any license key.
 5. Enjoy!
 
+The patcher has a few CLI options:
+
+- `-h`, `--help`: Show the help message
+- `-s`, `--scan-fs`: Scan filesystem for Sublime binaries
+- `-l`, `--log-level`: Set log level (trace, debug, info, warn, error, critical)
+- `-b`, `--no-backup`: Do not create a backup of the original binary
+
+By default, it will only check the current directory for the binary.  
+Using the `-s` option will try and locate the binary in the default expected locations.  
+_Paths documented in [Sublime Text](https://www.sublimetext.com/docs/command_line.html) and [Sublime Merge](https://www.sublimemerge.com/docs/command_line) CLI documentation._
+
 If you want to revert the patch, simply delete the patched binary and rename the backup to the original name.
 
 ## Supported versions
@@ -30,6 +41,8 @@ Make sure to follow the style of the existing code (as set by `.clang-format`), 
 
 - The Sublime Text and Sublime Merge developers for creating such great software.
 - [spdlog](https://github.com/gabime/spdlog) for the simple C++ logging library.
+- [CLI11](https://github.com/CLIUtils/CLI11) for the command-line parser.
+- [CPM.cmake](https://github.com/cpm-cmake/CPM.cmake) for the CMake dependency manager.
 - [Defuse](https://defuse.ca/) for the useful Online x86 / x64 Assembler and Disassembler.
 - [HxD](https://mh-nexus.de/en/hxd/) for the awesome hex editor.
 - [sublime-text-4-patcher](https://github.com/rainbowpigeon/sublime-text-4-patcher) for a Python version of the patcher from which I took some inspiration.
