@@ -7,13 +7,17 @@ set(CMAKE_CXX_EXTENSIONS OFF) # Disable compiler-specific extensions
 
 include(FetchContent)
 
-set(SPDLOG_USE_STD_FORMAT ON CACHE BOOL "Use std::format in spdlog")
-FetchContent_Declare(
-        spdlog
-        GIT_REPOSITORY https://github.com/gabime/spdlog.git
-        GIT_TAG v1.15.1
+file(
+        DOWNLOAD
+        https://github.com/cpm-cmake/CPM.cmake/releases/download/v0.40.5/CPM.cmake
+        ${CMAKE_CURRENT_BINARY_DIR}/cmake/CPM.cmake
+        EXPECTED_HASH SHA256=c46b876ae3b9f994b4f05a4c15553e0485636862064f1fcc9d8b4f832086bc5d
 )
-FetchContent_MakeAvailable(spdlog)
+include(${CMAKE_CURRENT_BINARY_DIR}/cmake/CPM.cmake)
+
+set(SPDLOG_USE_STD_FORMAT ON CACHE BOOL "Use std::format in spdlog")
+CPMAddPackage("gh:gabime/spdlog@1.15.1")
+CPMAddPackage("gh:CLIUtils/CLI11@2.4.2")
 
 add_executable(sublime_patcher
         src/main.cpp
@@ -28,7 +32,7 @@ add_executable(sublime_patcher
         src/patch/PatchManager.hpp
 )
 
-target_link_libraries(sublime_patcher PRIVATE spdlog::spdlog)
+target_link_libraries(sublime_patcher PRIVATE spdlog::spdlog CLI11::CLI11)
 
 if (MSVC)
     target_compile_options(sublime_patcher PRIVATE /W4 /permissive- /utf-8)
