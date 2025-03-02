@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.30)
+cmake_minimum_required(VERSION 3.14)
 project(sublime_patcher LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 23)
@@ -17,7 +17,7 @@ include(${CMAKE_CURRENT_BINARY_DIR}/cmake/CPM.cmake)
 
 set(SPDLOG_USE_STD_FORMAT ON CACHE BOOL "Use std::format in spdlog")
 CPMAddPackage("gh:gabime/spdlog@1.15.1")
-CPMAddPackage("gh:CLIUtils/CLI11@2.4.2")
+CPMAddPackage("gh:CLIUtils/CLI11@2.5.0")
 
 add_executable(sublime_patcher
         src/main.cpp
