@@ -15,7 +15,7 @@ jobs:
             c_compiler: gcc
             cpp_compiler: g++
 
-          - release_for: macOS-arm64
+          - release_for: macOS
             os: macos-latest
             bin: sublime_patcher
             c_compiler: gcc-14

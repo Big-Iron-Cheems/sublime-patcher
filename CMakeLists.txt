@@ -5,6 +5,10 @@ set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED TRUE) # Enforce the standard
 set(CMAKE_CXX_EXTENSIONS OFF) # Disable compiler-specific extensions
 
+if (APPLE)
+    set(CMAKE_OSX_ARCHITECTURES "arm64;x86_64" CACHE STRING "Build architectures for macOS")
+endif ()
+
 include(FetchContent)
 
 file(
