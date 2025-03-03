@@ -122,7 +122,7 @@ std::optional<std::filesystem::path> findExecutable(const ProgramOptions &option
 }
 
 int patchFile(const std::filesystem::path &path, const PatchManager &patch_manager, const ProgramOptions &options) {
-    SublimeApp sublime_app(path);
+    auto sublime_app = SublimeApp::create(path);
 
     // Check if the Sublime Text/Merge version is already patched
     if (patch_manager.isAlreadyPatched(sublime_app)) return EXIT_SUCCESS;

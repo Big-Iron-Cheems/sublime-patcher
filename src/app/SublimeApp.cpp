@@ -1,12 +1,11 @@
 #include "SublimeApp.hpp"
 
-SublimeApp::SublimeApp(std::filesystem::path file_path)
-    : file_path(std::move(file_path)),
-      file_data(loadFileData()),
-      patched_data(file_data),
-      app_info(extractFileInfo(file_data)),
-      app_type(detectAppType(this->file_path)) {
-    spdlog::info("[+] Detected {}", *this);
+SublimeApp SublimeApp::create(std::filesystem::path file_path) {
+    auto file_data = loadFileData(file_path);
+    auto app_type = detectAppType(file_path);
+    auto app_info = extractFileInfo(file_data, file_path);
+
+    return SublimeApp(std::move(file_path), std::move(file_data), std::move(app_type), std::move(app_info));
 }
 
 std::ostream &operator<<(std::ostream &os, const SublimeApp &app) {
@@ -43,7 +42,19 @@ bool SublimeApp::savePatchedFile() const {
     }
 }
 
-std::vector<unsigned char> SublimeApp::loadFileData() const {
+// Private methods
+
+SublimeApp::SublimeApp(std::filesystem::path file_path, std::vector<unsigned char> file_data, AppType app_type, AppInfo app_info)
+    : file_path(std::move(file_path)),
+      file_data(std::move(file_data)),
+      patched_data(this->file_data),
+      app_info(std::move(app_info)),
+      app_type(app_type) {
+    spdlog::info("[+] Detected {}", *this);
+}
+
+std::vector<unsigned char> SublimeApp::loadFileData(const std::filesystem::path &file_path) {
+    spdlog::info("[+] Loading file: {}", file_path.string());
     std::ifstream file(file_path, std::ios::binary);
     if (!file.is_open()) {
         throw std::runtime_error("[-] Error: Could not open file: " + file_path.string());
@@ -57,8 +68,6 @@ std::vector<unsigned char> SublimeApp::loadFileData() const {
     return data;
 }
 
-// Private methods
-
 AppType SublimeApp::detectAppType(const std::filesystem::path &file_path) {
     const std::string filename = file_path.filename().string();
     if (filename.contains("sublime_text")) return AppType::SublimeText;
@@ -66,7 +75,7 @@ AppType SublimeApp::detectAppType(const std::filesystem::path &file_path) {
     throw std::runtime_error("[-] Error: Unknown Sublime application: " + filename);
 }
 
-AppInfo SublimeApp::extractFileInfo(const std::vector<unsigned char> &data) const {
+AppInfo SublimeApp::extractFileInfo(const std::vector<unsigned char> &data, const std::filesystem::path &file_path) {
     const std::string content(data.begin(), data.end());
     static const std::regex regex_pattern(R"(version=(\d+)&platform=(\w+)&arch=(\w+))");
 

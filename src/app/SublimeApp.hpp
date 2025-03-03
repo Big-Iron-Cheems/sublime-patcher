@@ -10,7 +10,8 @@
 
 class SublimeApp {
 public:
-    explicit SublimeApp(std::filesystem::path file_path);
+    /// Create a SublimeApp instance from the given file path
+    static SublimeApp create(std::filesystem::path file_path);
     friend std::ostream &operator<<(std::ostream &os, const SublimeApp &app);
 
     /// Create a backup of the original file
@@ -25,12 +26,14 @@ public:
     const AppType app_type;                     ///< Type of the Sublime application
 
 private:
+    /// Private constructor to initialize the SublimeApp instance
+    SublimeApp(std::filesystem::path file_path, std::vector<unsigned char> file_data, AppType app_type, AppInfo app_info);
     /// Load the file data into memory
-    std::vector<unsigned char> loadFileData() const;
-    /// Extract version, platform, and architecture information from the executable
-    AppInfo extractFileInfo(const std::vector<unsigned char> &data) const;
+    static std::vector<unsigned char> loadFileData(const std::filesystem::path &file_path);
     /// Detect the type of the Sublime application
     static AppType detectAppType(const std::filesystem::path &file_path);
+    /// Extract version, platform, and architecture information from the executable
+    static AppInfo extractFileInfo(const std::vector<unsigned char> &data, const std::filesystem::path &file_path);
 };
 
 template<>
