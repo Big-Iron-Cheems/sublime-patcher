@@ -51,9 +51,29 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ${{ steps.strings.outputs.build-output-dir }}
-          key: ${{ runner.os }}-cmake-${{ hashFiles('**/CMakeLists.txt', '**/*.cpp', '**/*.hpp') }}
+          key: ${{ runner.os }}-cmake-ninja-${{ hashFiles('**/CMakeLists.txt', '**/*.cpp', '**/*.hpp') }}
           restore-keys: |
-            ${{ runner.os }}-cmake-
+            ${{ runner.os }}-cmake-ninja-
+
+      - name: Setup Linux
+        if: matrix.platform.os == 'ubuntu-latest'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ninja-build
+
+      - name: Setup Windows
+        if: matrix.platform.os == 'windows-latest'
+        run: |
+          choco install ninja -y
+
+      - name: Setup MSVC
+        if: matrix.platform.os == 'windows-latest'
+        uses: ilammy/msvc-dev-cmd@v1
+
+      - name: Setup macOS
+        if: matrix.platform.os == 'macos-latest'
+        run: |
+          brew install ninja
 
       - name: Configure CMake
         run: >
@@ -62,21 +82,13 @@ jobs:
           -DCMAKE_C_COMPILER=${{ matrix.platform.c_compiler }}
           -DCMAKE_BUILD_TYPE=Release
           -DCPM_SOURCE_CACHE=${{ steps.strings.outputs.cpm-cache-dir }}
+          -G Ninja
           -S ${{ github.workspace }}
 
       - name: Build
         run: cmake --build ${{ steps.strings.outputs.build-output-dir }} --config Release
 
-      - name: Upload Artifacts (Windows)
-        if: matrix.platform.os == 'windows-latest'
-        uses: actions/upload-artifact@v4
-        with:
-          name: sublime_patcher-${{ matrix.platform.release_for }}
-          path: ${{ steps.strings.outputs.build-output-dir }}/Release/${{ matrix.platform.bin }}
-          if-no-files-found: error
-
-      - name: Upload Artifacts (Unix-like)
-        if: matrix.platform.os != 'windows-latest'
+      - name: Upload Artifacts
         uses: actions/upload-artifact@v4
         with:
           name: sublime_patcher-${{ matrix.platform.release_for }}
