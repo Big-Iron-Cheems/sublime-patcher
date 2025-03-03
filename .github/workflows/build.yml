@@ -1,0 +1,84 @@
+name: Build
+on:
+  push:
+    branches: [ '**' ]
+
+jobs:
+  release:
+    name: ${{ matrix.platform.release_for }}
+    strategy:
+      matrix:
+        platform:
+          - release_for: Linux-x86_64
+            os: ubuntu-latest
+            bin: sublime_patcher
+            c_compiler: gcc
+            cpp_compiler: g++
+
+          - release_for: macOS-arm64
+            os: macos-latest
+            bin: sublime_patcher
+            c_compiler: gcc-14
+            cpp_compiler: g++-14
+
+          - release_for: Windows-x86_64
+            os: windows-latest
+            bin: sublime_patcher.exe
+            c_compiler: cl
+            cpp_compiler: cl
+
+    runs-on: ${{ matrix.platform.os }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set reusable strings
+        id: strings
+        shell: bash
+        run: |
+          echo "build-output-dir=${{ github.workspace }}/build" >> "$GITHUB_OUTPUT"
+          echo "cpm-cache-dir=${{ github.workspace }}/cpm-cache" >> "$GITHUB_OUTPUT"
+
+      - name: Cache CPM Packages
+        uses: actions/cache@v4
+        with:
+          path: ${{ steps.strings.outputs.cpm-cache-dir }}
+          key: ${{ runner.os }}-cpm-${{ hashFiles('**/CMakeLists.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-cpm-
+
+      - name: Cache CMake build
+        uses: actions/cache@v4
+        with:
+          path: ${{ steps.strings.outputs.build-output-dir }}
+          key: ${{ runner.os }}-cmake-${{ hashFiles('**/CMakeLists.txt', '**/*.cpp', '**/*.hpp') }}
+          restore-keys: |
+            ${{ runner.os }}-cmake-
+
+      - name: Configure CMake
+        run: >
+          cmake -B ${{ steps.strings.outputs.build-output-dir }}
+          -DCMAKE_CXX_COMPILER=${{ matrix.platform.cpp_compiler }}
+          -DCMAKE_C_COMPILER=${{ matrix.platform.c_compiler }}
+          -DCMAKE_BUILD_TYPE=Release
+          -DCPM_SOURCE_CACHE=${{ steps.strings.outputs.cpm-cache-dir }}
+          -S ${{ github.workspace }}
+
+      - name: Build
+        run: cmake --build ${{ steps.strings.outputs.build-output-dir }} --config Release
+
+      - name: Upload Artifacts (Windows)
+        if: matrix.platform.os == 'windows-latest'
+        uses: actions/upload-artifact@v4
+        with:
+          name: sublime_patcher-${{ matrix.platform.release_for }}
+          path: ${{ steps.strings.outputs.build-output-dir }}/Release/${{ matrix.platform.bin }}
+          if-no-files-found: error
+
+      - name: Upload Artifacts (Unix-like)
+        if: matrix.platform.os != 'windows-latest'
+        uses: actions/upload-artifact@v4
+        with:
+          name: sublime_patcher-${{ matrix.platform.release_for }}
+          path: ${{ steps.strings.outputs.build-output-dir }}/${{ matrix.platform.bin }}
+          if-no-files-found: error

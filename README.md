@@ -24,6 +24,17 @@ _Paths documented in [Sublime Text](https://www.sublimetext.com/docs/command_lin
 
 If you want to revert the patch, simply delete the patched binary and rename the backup to the original name.
 
+## Pre-built Binaries
+
+If you don't want to build from source, each commit is built by a GitHub Actions workflow and artifacts are available for download.   
+You can download the latest artifacts from the [GitHub Actions page](https://github.com/Big-Iron-Cheems/sublime-patcher/actions) by:
+
+1. Selecting the most recent successful workflow run
+2. Scrolling down to the "Artifacts" section
+3. Downloading the appropriate binary for your platform (Windows, macOS, or Linux)
+
+_Note: A GitHub account is required to download the artifacts._
+
 ## Supported versions
 
 The patcher has been tested with Sublime Text 4 and Sublime Merge 2.   
