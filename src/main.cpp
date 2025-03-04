@@ -12,22 +12,25 @@
 struct ProgramOptions {
     std::string binary_path;
     bool scan_fs = false;
-    std::string log_level = "info";
+    spdlog::level::level_enum log_level = spdlog::level::info;
     bool backup = true;
 };
 
 /// Parse CLI options via CLI11
 ProgramOptions parseCli(const int argc, char *argv[]) {
+    using enum spdlog::level::level_enum;
     ProgramOptions options;
     CLI::App app{"Sublime Text/Merge License Patcher"};
     app.name(std::filesystem::path(argv[0]).filename().string());
     app.get_formatter()->column_width(40);
 
-    app.add_option("sublime_binary", options.binary_path, "Path to Sublime Text/Merge binary")->check(CLI::ExistingFile)->type_size(0);
+    static const std::map<std::string, spdlog::level::level_enum> log_level_map = {{"trace", trace}, {"debug", debug}, {"info", info},
+                                                                                   {"warn", warn},   {"error", err},   {"critical", critical}};
+
+    app.add_option("sublime_binary", options.binary_path, "Path to Sublime Text/Merge binary")->check(CLI::ExistingFile);
     app.add_flag("--scan-fs,-s", options.scan_fs, "Scan filesystem for Sublime binaries");
     app.add_option("--log-level,-l", options.log_level, "Log level (trace, debug, info, warn, error, critical)")
-            ->check(CLI::IsMember({"trace", "debug", "info", "warn", "error", "critical"}))
-            ->type_size(0);
+            ->transform(CLI::Transformer(log_level_map, CLI::ignore_case).description("LOG_LEVEL"));
     app.add_flag("!--no-backup,!-b", options.backup, "Disable backup creation");
 
     try {
@@ -47,16 +50,9 @@ ProgramOptions parseCli(const int argc, char *argv[]) {
 void initLogger(const ProgramOptions &options) {
     auto console = spdlog::stdout_color_mt("console");
     spdlog::set_pattern("[%^%l%$] %v");
-
-    spdlog::level::level_enum log_level_enum = spdlog::level::info;
-    if (options.log_level == "trace") log_level_enum = spdlog::level::trace;
-    else if (options.log_level == "debug") log_level_enum = spdlog::level::debug;
-    else if (options.log_level == "warn") log_level_enum = spdlog::level::warn;
-    else if (options.log_level == "error") log_level_enum = spdlog::level::err;
-    else if (options.log_level == "critical") log_level_enum = spdlog::level::critical;
-    spdlog::set_level(log_level_enum);
-
-    if (!options.backup) spdlog::warn("Backup creation is disabled, you may corrupt your original file");
+    spdlog::set_level(options.log_level);
+    if (options.log_level != spdlog::level::info) spdlog::info("[*] Log level set to: {}", to_string_view(options.log_level));
+    if (!options.backup) spdlog::warn("[*] Backup creation is disabled, you may corrupt your original file");
 }
 
 /// Try to find Sublime Text or Sublime Merge executable in the current directory or default paths
